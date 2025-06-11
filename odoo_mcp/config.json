@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "odoo-mcp": {
+      "command": "python",
+      "args": [
+        "-m",
+        "odoo_mcp.server"
+      ]
+    }
+  },
+  "odoo_url": "${ODOO_URL}",
+  "database": "${ODOO_DB}",
+  "username": "${ODOO_USER}",
+  "api_key": "${ODOO_PASSWORD}",
+  "protocol": "${PROTOCOL}",
+  "connection_type": "stdio",
+  "requests_per_minute": 120,
+  "rate_limit_max_wait_seconds": 5,
+  "pool_size": 5,
+  "timeout": 30,
+  "session_timeout_minutes": 60,
+  "logging": {
+    "level": "${LOGGING_LEVEL}",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "handlers": [
+      {
+        "type": "StreamHandler",
+        "level": "${LOGGING_LEVEL}"
+      }
+    ]
+  }
+}

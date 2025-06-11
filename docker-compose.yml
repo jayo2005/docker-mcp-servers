@@ -1,0 +1,235 @@
+version: '3.8'
+
+services:
+  mcp-github:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-github
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - ./github:/app
+    stdin_open: true
+    tty: false
+    command: npx -y @modelcontextprotocol/server-github
+    networks:
+      - mcp-network
+
+  mcp-puppeteer:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-puppeteer
+    volumes:
+      - ./puppeteer:/app
+    cap_add:
+      - SYS_ADMIN
+    stdin_open: true
+    tty: false
+    command: npx -y @modelcontextprotocol/server-puppeteer
+    networks:
+      - mcp-network
+
+  mcp-filesystem:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-filesystem
+    volumes:
+      - ./filesystem:/app
+      - /home/jason:/home/jason:ro
+    stdin_open: true
+    tty: false
+    command: npx -y @modelcontextprotocol/server-filesystem /home/jason
+    networks:
+      - mcp-network
+
+  mcp-odoo-17-paint:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-odoo-17-paint
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://odoo:Sc00tZujeva@host.docker.internal:5432/postgres}
+    volumes:
+      - ./odoo_17_paint:/app
+    stdin_open: true
+    tty: false
+    command: npx -y @modelcontextprotocol/server-postgres ${DATABASE_URL:-postgresql://odoo:Sc00tZujeva@host.docker.internal:5432/postgres}
+    networks:
+      - mcp-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mcp-excel:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-excel
+    volumes:
+      - ./excel:/app
+      - /home/jason:/home/jason:rw
+    stdin_open: true
+    tty: false
+    command: npx -y @negokaz/excel-mcp-server
+    networks:
+      - mcp-network
+
+  mcp-duckduckgo:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-duckduckgo
+    volumes:
+      - ./duckduckgo:/app
+    stdin_open: true
+    tty: false
+    command: npx -y @oevortex/ddg_search
+    networks:
+      - mcp-network
+
+  mcp-octagon-deep-research:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-octagon-deep-research
+    environment:
+      - OCTAGON_API_KEY=${OCTAGON_API_KEY}
+    volumes:
+      - ./octagon_deep_research:/app
+    stdin_open: true
+    tty: false
+    command: npx -y octagon-deep-research-mcp@latest
+    networks:
+      - mcp-network
+
+  mcp-sage-mssql:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-sage-mssql
+    environment:
+      - DATABASE_URL=Server=${MSSQL_SERVER};Database=${MSSQL_DATABASE};User Id=${MSSQL_USER};Password=${MSSQL_PASSWORD};Encrypt=true;TrustServerCertificate=true
+      - MSSQL_SERVER=${MSSQL_SERVER:-192.168.20.188}
+      - MSSQL_DATABASE=${MSSQL_DATABASE:-AdvanceCoatings}
+      - MSSQL_USER=${MSSQL_USER:-sa}
+      - MSSQL_PASSWORD=${MSSQL_PASSWORD:-Sc00tZujeva}
+    volumes:
+      - ./sage_mssql:/app
+    stdin_open: true
+    tty: false
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    networks:
+      - mcp-network
+
+  mcp-odoo-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-odoo-mcp
+    environment:
+      - ODOO_URL=${ODOO_MCP_URL:-http://host.docker.internal:8069}
+      - ODOO_DB=${ODOO_MCP_DB:-odoo}
+      - ODOO_USER=${ODOO_MCP_USER:-admin}
+      - ODOO_PASSWORD=${ODOO_MCP_PASSWORD:-admin}
+      - PROTOCOL=${ODOO_MCP_PROTOCOL:-xmlrpc}
+      - CONNECTION_TYPE=stdio
+      - LOGGING_LEVEL=${ODOO_MCP_LOG_LEVEL:-INFO}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./odoo_mcp:/app
+    stdin_open: true
+    tty: false
+    command: sh -c "pip install mcp-odoo-panda && python -m odoo_mcp.server"
+    networks:
+      - mcp-network
+
+  mcp-odoo16:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-odoo16
+    environment:
+      - ODOO_URL=${ODOO16_URL:-http://host.docker.internal:8069}
+      - ODOO_DB=${ODOO16_DB:-odoo16}
+      - ODOO_USER=${ODOO16_USER:-admin}
+      - ODOO_PASSWORD=${ODOO16_PASSWORD:-admin}
+      - PROTOCOL=${ODOO16_PROTOCOL:-xmlrpc}
+      - CONNECTION_TYPE=stdio
+      - LOGGING_LEVEL=${ODOO16_LOG_LEVEL:-INFO}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./odoo_mcp:/app
+    stdin_open: true
+    tty: false
+    command: sh -c "pip install mcp-odoo-panda && python -m odoo_mcp.server"
+    networks:
+      - mcp-network
+
+  mcp-odoo17:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-odoo17
+    environment:
+      - ODOO_URL=${ODOO17_URL:-http://host.docker.internal:8070}
+      - ODOO_DB=${ODOO17_DB:-odoo17}
+      - ODOO_USER=${ODOO17_USER:-admin}
+      - ODOO_PASSWORD=${ODOO17_PASSWORD:-admin}
+      - PROTOCOL=${ODOO17_PROTOCOL:-xmlrpc}
+      - CONNECTION_TYPE=stdio
+      - LOGGING_LEVEL=${ODOO17_LOG_LEVEL:-INFO}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./odoo_mcp:/app
+    stdin_open: true
+    tty: false
+    command: sh -c "pip install mcp-odoo-panda && python -m odoo_mcp.server"
+    networks:
+      - mcp-network
+
+  mcp-wordpress:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-wordpress
+    environment:
+      - WORDPRESS_URL=${WORDPRESS_URL:-http://localhost}
+      - WORDPRESS_USERNAME=${WORDPRESS_USERNAME:-admin}
+      - WORDPRESS_PASSWORD=${WORDPRESS_PASSWORD:-password}
+      - WORDPRESS_AUTH_TYPE=${WORDPRESS_AUTH_TYPE:-basic}
+    volumes:
+      - ./wordpress_mcp:/app
+    stdin_open: true
+    tty: false
+    command: npx -y server-wp-mcp
+    networks:
+      - mcp-network
+
+  mcp-elementor:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    container_name: mcp-elementor
+    environment:
+      - WORDPRESS_URL=${ELEMENTOR_URL:-http://localhost}
+      - WORDPRESS_USERNAME=${ELEMENTOR_USERNAME:-admin}
+      - WORDPRESS_PASSWORD=${ELEMENTOR_PASSWORD:-password}
+      - WORDPRESS_AUTH_TYPE=${ELEMENTOR_AUTH_TYPE:-basic}
+      - ELEMENTOR_API_KEY=${ELEMENTOR_API_KEY:-}
+    volumes:
+      - ./elementor_mcp:/app
+    stdin_open: true
+    tty: false
+    command: npx -y wp-elementor-mcp
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge

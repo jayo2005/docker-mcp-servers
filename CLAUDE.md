@@ -1,0 +1,182 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## MCP Server Infrastructure Overview
+
+This repository implements a Docker-based MCP (Model Context Protocol) server infrastructure that extends Claude Code's capabilities through containerized microservices. Each MCP server runs in isolation and communicates via stdin/stdout.
+
+Currently hosting 13 MCP servers providing capabilities for:
+- File system access and GitHub integration
+- Database access (PostgreSQL, MSSQL)
+- Odoo ERP integration (multiple versions, SQL & API)
+- Browser automation and web scraping
+- Excel file manipulation
+- Web search and AI-powered deep research
+- WordPress and Elementor page builder integration
+
+## Essential Commands
+
+### Server Management
+```bash
+# Build all Docker images
+./manage.sh build
+
+# Start all MCP servers
+./manage.sh start
+
+# Stop all MCP servers
+./manage.sh stop
+
+# View logs for all servers or specific server
+./manage.sh logs [service-name]
+
+# Test all MCP servers
+./manage.sh test
+
+# List configured Claude Code MCP servers
+claude mcp list
+```
+
+### Adding New MCP Servers
+1. Add service definition to `docker-compose.yml` following the pattern:
+   ```yaml
+   mcp-newserver:
+     build:
+       context: .
+       dockerfile: Dockerfile.base
+     container_name: mcp-newserver
+     environment:
+       - API_KEY=${API_KEY}  # If API key needed
+     volumes:
+       - ./newserver:/app
+     stdin_open: true
+     tty: false
+     command: npx -y @provider/server-package
+     networks:
+       - mcp-network
+   ```
+
+2. Create directory: `mkdir -p newserver`
+
+3. Create wrapper script: `scripts/mcp-newserver.sh`
+   ```bash
+   #!/bin/bash
+   cd /home/jason/MCP_SERVERS
+   docker compose run --rm -i mcp-newserver
+   ```
+
+4. Make executable: `chmod +x scripts/mcp-newserver.sh`
+
+5. Add environment variables to `.env.template` if needed
+
+6. Register with Claude Code: `claude mcp add newserver /home/jason/MCP_SERVERS/scripts/mcp-newserver.sh`
+
+7. Build Docker image: `docker compose build mcp-newserver`
+
+8. Update documentation in README.md and test-servers.sh
+
+## Architecture Patterns
+
+### Container Configuration
+- All services use `Dockerfile.base` (Node.js 20 Alpine)
+- Non-root user `mcpuser` for security
+- Required settings: `stdin_open: true`, `tty: false`
+- Shared network: `mcp-network`
+
+### Volume Mount Patterns
+- Server workspace: `./servername:/app`
+- File access (read-only): `/home/jason:/home/jason:ro`
+- File access (read-write): `/home/jason:/home/jason:rw`
+
+### Environment Variables
+- Sensitive data via `.env` file (copy from `.env.template`)
+- Default values in docker-compose.yml using `${VAR:-default}`
+- Host database access: `host.docker.internal`
+
+### Special Capabilities
+- Browser automation (puppeteer): requires `cap_add: - SYS_ADMIN`
+- Host network access: requires `extra_hosts: - "host.docker.internal:host-gateway"`
+
+## Current MCP Servers
+
+### Core Servers
+1. **filesystem** - Read-only access to /home/jason
+2. **github** - GitHub API (requires GITHUB_TOKEN in .env)
+3. **puppeteer** - Browser automation
+4. **excel** - Excel file manipulation
+5. **duckduckgo** - Web search
+6. **octagon-deep-research** - AI-powered deep research (requires OCTAGON_API_KEY in .env)
+
+### Database Servers
+7. **ODOO_17_paint** - PostgreSQL/Odoo 17 database direct SQL access
+8. **Sage_MSSQL** - Microsoft SQL Server for Sage/AdvanceCoatings
+
+### Odoo API Servers
+9. **ODOO_MCP** - Universal Odoo API server (works with v12-v17+)
+10. **ODOO16** - Dedicated Odoo v16 API access
+11. **ODOO17** - Dedicated Odoo v17 API access
+
+### WordPress/Web Development
+12. **wordpress** - WordPress REST API access
+13. **elementor** - Elementor page builder integration
+
+## Quick Registration Commands
+
+From your project directory, run these commands to register all MCP servers:
+
+```bash
+# Core servers
+claude mcp add filesystem /home/jason/MCP_SERVERS/scripts/mcp-filesystem.sh
+claude mcp add github /home/jason/MCP_SERVERS/scripts/mcp-github.sh
+claude mcp add puppeteer /home/jason/MCP_SERVERS/scripts/mcp-puppeteer.sh
+claude mcp add excel /home/jason/MCP_SERVERS/scripts/mcp-excel.sh
+claude mcp add duckduckgo /home/jason/MCP_SERVERS/scripts/mcp-duckduckgo.sh
+claude mcp add octagon-deep-research /home/jason/MCP_SERVERS/scripts/mcp-octagon-deep-research.sh
+
+# Database servers
+claude mcp add ODOO_17_paint /home/jason/MCP_SERVERS/scripts/mcp-odoo-17-paint.sh
+claude mcp add Sage_MSSQL /home/jason/MCP_SERVERS/scripts/mcp-sage-mssql.sh
+
+# Odoo API servers
+claude mcp add ODOO_MCP /home/jason/MCP_SERVERS/scripts/mcp-odoo-mcp.sh
+claude mcp add ODOO16 /home/jason/MCP_SERVERS/scripts/mcp-odoo16.sh
+claude mcp add ODOO17 /home/jason/MCP_SERVERS/scripts/mcp-odoo17.sh
+
+# WordPress/Web development
+claude mcp add wordpress /home/jason/MCP_SERVERS/scripts/mcp-wordpress.sh
+claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
+```
+
+## Server-Specific Notes
+
+### ODOO_17_paint Database Server
+- Configured for Odoo 17 ERP database access
+- Credentials: `odoo:Sc00tZujeva`
+- Connection: `postgresql://odoo:Sc00tZujeva@host.docker.internal:5432/postgres`
+- Access to all Odoo tables (res_users, res_partner, sale_order, product_product, etc.)
+
+### Octagon Deep Research Server
+- Requires API key from https://docs.octagonagents.com
+- No rate limits for research queries
+- Superior to ChatGPT/Grok/Perplexity deep research capabilities
+- Set OCTAGON_API_KEY in .env file before use
+
+## Troubleshooting
+
+### Server Not Appearing in Claude Code
+- Verify server is added: `claude mcp list`
+- Check wrapper script is executable: `ls -la scripts/`
+- Test server directly: `./scripts/mcp-servername.sh`
+
+### Connection Issues
+- Check Docker service: `docker compose ps`
+- View server logs: `docker compose logs mcp-servername`
+- Verify environment variables: `cat .env`
+- Rebuild if needed: `docker compose build mcp-servername`
+
+### Common Issues
+- **"No MCP servers configured"**: Servers are registered per-project. Run `claude mcp list` to verify
+- **API key errors**: Check .env file has correct API keys (GITHUB_TOKEN, OCTAGON_API_KEY)
+- **Database connection fails**: Ensure PostgreSQL is running on host and accepting connections
+- **Permission denied**: Make wrapper scripts executable with `chmod +x scripts/*.sh`

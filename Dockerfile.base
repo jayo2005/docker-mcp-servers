@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+# Install necessary packages
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git
+
+# Create a non-root user
+RUN adduser -D -s /bin/bash mcpuser
+
+# Set working directory
+WORKDIR /app
+
+# Switch to non-root user
+USER mcpuser
+
+# Keep container running and accept stdio
+CMD ["sh", "-c", "tail -f /dev/null"]
