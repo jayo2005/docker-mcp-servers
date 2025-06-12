@@ -1,0 +1,33 @@
+FROM node:20-alpine
+
+# Install necessary packages for Puppeteer
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    chromium \
+    chromium-chromedriver \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    xvfb \
+    dbus
+
+# Create a non-root user
+RUN adduser -D -s /bin/bash mcpuser
+
+# Tell Puppeteer to use installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Set working directory
+WORKDIR /app
+
+# Switch to non-root user
+USER mcpuser
+
+# Keep container running and accept stdio
+CMD ["sh", "-c", "tail -f /dev/null"]

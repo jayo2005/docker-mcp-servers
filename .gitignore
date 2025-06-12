@@ -42,3 +42,7 @@ env/
 # MCP server data (if any)
 */data/
 */cache/
+
+# WhatsApp data directories
+whatsapp_data/
+whatsapp_lharries/

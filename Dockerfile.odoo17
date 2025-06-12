@@ -1,0 +1,30 @@
+FROM node:20-alpine
+
+# Install dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git
+
+# Create non-root user
+RUN adduser -D -s /bin/bash mcpuser
+
+# Set working directory
+WORKDIR /app
+
+# Change ownership of app directory
+RUN chown -R mcpuser:mcpuser /app
+
+# Copy package.json first
+COPY --chown=mcpuser:mcpuser odoo17/package.json ./
+
+# Switch to non-root user
+USER mcpuser
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application
+COPY --chown=mcpuser:mcpuser odoo17/server.js ./
+
+CMD ["npm", "start"]

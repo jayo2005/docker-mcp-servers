@@ -102,7 +102,7 @@ claude mcp list
 
 ### Core Servers
 1. **filesystem** - Read-only access to /home/jason
-2. **github** - GitHub API (requires GITHUB_TOKEN in .env)
+2. **github** - GitHub API (requires GITHUB_TOKEN in .env) - Custom implementation fixing authentication issues
 3. **puppeteer** - Browser automation
 4. **excel** - Excel file manipulation
 5. **duckduckgo** - Web search
@@ -156,11 +156,42 @@ claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
 - Connection: `postgresql://odoo:Sc00tZujeva@host.docker.internal:5432/postgres`
 - Access to all Odoo tables (res_users, res_partner, sale_order, product_product, etc.)
 
+### ODOO16 Server
+- Docker-based Odoo v16 instance
+- Port: 10016
+- Database: demo_theme4
+- Credentials: info@softcroft.ie / Sc00tZujeva
+- Full XML-RPC access to all Odoo models
+
+### ODOO17 Server  
+- Native Odoo v17 installation at /home/jason/odoo17_src
+- Port: 8069
+- Database: inter2
+- Credentials: info@softcroft.ie / Sc00tZujeva
+- Configuration: /home/jason/odoo17_src/odoo.conf
+- Full XML-RPC access to all Odoo models
+
+### Sage_MSSQL Server
+- Microsoft SQL Server 2017 on Ubuntu 18.04
+- Server: 192.168.20.188:1433
+- Database: AdvanceCoatings
+- Credentials: sa / Sc00tZujeva
+- 400+ Sage accounting tables available
+- Key tables: StockItem, Customer, Supplier, BOM, etc.
+- Requires custom Dockerfile for permissions
+
 ### Octagon Deep Research Server
 - Requires API key from https://docs.octagonagents.com
 - No rate limits for research queries
 - Superior to ChatGPT/Grok/Perplexity deep research capabilities
 - Set OCTAGON_API_KEY in .env file before use
+
+### GitHub MCP Server (Custom Implementation)
+- Fixed authentication issue with original @modelcontextprotocol/server-github
+- Uses custom Octokit-based implementation for proper GitHub API authentication
+- Full support for all GitHub operations including repository creation
+- Located in `/github-custom/` directory with custom Dockerfile
+- Automatically used when you run the standard GitHub MCP server
 
 ## Troubleshooting
 
@@ -180,3 +211,127 @@ claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
 - **API key errors**: Check .env file has correct API keys (GITHUB_TOKEN, OCTAGON_API_KEY)
 - **Database connection fails**: Ensure PostgreSQL is running on host and accepting connections
 - **Permission denied**: Make wrapper scripts executable with `chmod +x scripts/*.sh`
+
+### Odoo MCP Server Specific Issues
+
+#### Setting Up Odoo MCP Servers from Scratch
+
+When creating Odoo MCP servers (ODOO16, ODOO17, ODOO_MCP), follow these steps:
+
+1. **Create Node.js-based server** (not Python):
+   ```bash
+   mkdir -p odoo16
+   # Create package.json with @modelcontextprotocol/sdk and xmlrpc dependencies
+   # Create server.js implementing MCP protocol with Odoo XML-RPC
+   ```
+
+2. **Use custom Dockerfile with proper permissions**:
+   ```dockerfile
+   FROM node:20-alpine
+   # ... other setup ...
+   WORKDIR /app
+   RUN chown -R mcpuser:mcpuser /app  # Critical for npm install
+   USER mcpuser
+   ```
+
+3. **Configure environment variables correctly**:
+   - `ODOO_URL`: Use `http://host.docker.internal:PORT` for Docker
+   - `ODOO_DB`: Exact database name (check Odoo database selector)
+   - `ODOO_USER`: User's login (often email address)
+   - `ODOO_PASSWORD`: User's password (NOT master password)
+
+#### Common Odoo MCP Errors and Solutions
+
+1. **"Access Denied" Error**
+   - Wrong credentials: Use Odoo user login (email), not "admin"
+   - Password is the user's login password, not admin_passwd from odoo.conf
+   - Example: `info@softcroft.ie` / `Sc00tZujeva`
+
+2. **"KeyError: 'res.users'" Error**
+   - Database name is incorrect
+   - Solution: Find correct database name from Odoo login page or docker-compose.yml
+   - Example: Use `demo_theme4` not `postgres`
+
+3. **"pip: not found" Error**
+   - Trying to use Python in Node.js base image
+   - Solution: Create proper Node.js-based MCP server, not Python
+
+4. **NPM Permission Errors**
+   - Docker container permissions issue
+   - Solution: Add `RUN chown -R mcpuser:mcpuser /app` before USER directive
+
+5. **Connection Refused**
+   - Wrong port or host configuration
+   - Solution: Check Odoo docker-compose.yml for correct port mapping
+   - Example: Port 10016 for Odoo 16, not default 8069
+
+#### Testing Odoo MCP Servers
+
+```bash
+# Test tools list
+echo '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}' | ./scripts/mcp-odoo16.sh
+
+# Test connection with search_read
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "search_read", "arguments": {"model": "res.users", "fields": ["id", "name", "login"], "limit": 1}}, "id": 2}' | ./scripts/mcp-odoo16.sh
+```
+
+#### Odoo Server Tools Available
+- `search_read`: Search and read records with domain filters
+- `create`: Create new records
+- `write`: Update existing records  
+- `unlink`: Delete records
+- `fields_get`: Get model field definitions
+
+### Sage MSSQL Server Specific Issues
+
+#### Setting Up Sage MSSQL MCP Server
+
+1. **Create custom Dockerfile** (Dockerfile.sage-mssql):
+   ```dockerfile
+   FROM node:20-alpine
+   WORKDIR /app
+   RUN chown -R mcpuser:mcpuser /app
+   USER mcpuser
+   ```
+
+2. **NPM Permission Errors**
+   - Always use custom Dockerfile, not Dockerfile.base
+   - Ensure proper ownership before npm install
+
+3. **Connection Timeout Issues**
+   - Initial connection may take 10-30 seconds
+   - SQL Server needs time to establish connection
+   - Use timeout wrappers for testing
+
+#### Common Sage MSSQL Errors and Solutions
+
+1. **"EACCES: permission denied" during npm install**
+   - Solution: Use custom Dockerfile with proper chown commands
+   - Update docker-compose.yml to use Dockerfile.sage-mssql
+
+2. **Connection Timeouts**
+   - Test connectivity: `docker compose run --rm mcp-sage-mssql ping 192.168.20.188`
+   - Test port: `docker compose run --rm mcp-sage-mssql nc -zv 192.168.20.188 1433`
+   - Initial queries may take longer due to connection setup
+
+3. **Invalid Column Names**
+   - Use `describe_table` tool first to get correct column names
+   - Sage uses "Code" not "Sku", "Name" not "ProductName"
+
+#### Testing Sage MSSQL Server
+
+```bash
+# Test tools list
+echo '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}' | ./scripts/mcp-sage-mssql.sh
+
+# List tables (may timeout on first run)
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "list_tables", "arguments": {}}, "id": 2}' | timeout 15 ./scripts/mcp-sage-mssql.sh
+
+# Describe StockItem table
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "describe_table", "arguments": {"table_name": "StockItem"}}, "id": 3}' | ./scripts/mcp-sage-mssql.sh
+```
+
+#### Sage Server Tools Available
+- `query`: Execute read-only SQL queries
+- `list_tables`: List all database tables
+- `describe_table`: Get table schema information

@@ -4,30 +4,34 @@ services:
   mcp-github:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: Dockerfile.github-custom
     container_name: mcp-github
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
-    volumes:
-      - ./github:/app
     stdin_open: true
     tty: false
-    command: npx -y @modelcontextprotocol/server-github
     networks:
       - mcp-network
 
   mcp-puppeteer:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: Dockerfile.puppeteer
     container_name: mcp-puppeteer
+    environment:
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      - CHROME_PATH=/usr/bin/chromium-browser
+      - CHROMIUM_PATH=/usr/bin/chromium-browser
     volumes:
       - ./puppeteer:/app
+      - /home/jason:/home/jason:rw
     cap_add:
       - SYS_ADMIN
     stdin_open: true
     tty: false
-    command: npx -y @modelcontextprotocol/server-puppeteer
+    user: root
+    command: sh -c "cd /app && npx -y @modelcontextprotocol/server-puppeteer"
     networks:
       - mcp-network
 
@@ -107,7 +111,7 @@ services:
   mcp-sage-mssql:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: Dockerfile.sage-mssql
     container_name: mcp-sage-mssql
     environment:
       - DATABASE_URL=Server=${MSSQL_SERVER};Database=${MSSQL_DATABASE};User Id=${MSSQL_USER};Password=${MSSQL_PASSWORD};Encrypt=true;TrustServerCertificate=true
@@ -115,12 +119,8 @@ services:
       - MSSQL_DATABASE=${MSSQL_DATABASE:-AdvanceCoatings}
       - MSSQL_USER=${MSSQL_USER:-sa}
       - MSSQL_PASSWORD=${MSSQL_PASSWORD:-Sc00tZujeva}
-    volumes:
-      - ./sage_mssql:/app
     stdin_open: true
     tty: false
-    working_dir: /app
-    command: sh -c "npm install && npm start"
     networks:
       - mcp-network
 
@@ -150,46 +150,34 @@ services:
   mcp-odoo16:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: Dockerfile.odoo16
     container_name: mcp-odoo16
     environment:
       - ODOO_URL=${ODOO16_URL:-http://host.docker.internal:8069}
       - ODOO_DB=${ODOO16_DB:-odoo16}
       - ODOO_USER=${ODOO16_USER:-admin}
       - ODOO_PASSWORD=${ODOO16_PASSWORD:-admin}
-      - PROTOCOL=${ODOO16_PROTOCOL:-xmlrpc}
-      - CONNECTION_TYPE=stdio
-      - LOGGING_LEVEL=${ODOO16_LOG_LEVEL:-INFO}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    volumes:
-      - ./odoo_mcp:/app
     stdin_open: true
     tty: false
-    command: sh -c "pip install mcp-odoo-panda && python -m odoo_mcp.server"
     networks:
       - mcp-network
 
   mcp-odoo17:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: Dockerfile.odoo17
     container_name: mcp-odoo17
     environment:
-      - ODOO_URL=${ODOO17_URL:-http://host.docker.internal:8070}
+      - ODOO_URL=${ODOO17_URL:-http://host.docker.internal:8069}
       - ODOO_DB=${ODOO17_DB:-odoo17}
       - ODOO_USER=${ODOO17_USER:-admin}
       - ODOO_PASSWORD=${ODOO17_PASSWORD:-admin}
-      - PROTOCOL=${ODOO17_PROTOCOL:-xmlrpc}
-      - CONNECTION_TYPE=stdio
-      - LOGGING_LEVEL=${ODOO17_LOG_LEVEL:-INFO}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    volumes:
-      - ./odoo_mcp:/app
     stdin_open: true
     tty: false
-    command: sh -c "pip install mcp-odoo-panda && python -m odoo_mcp.server"
     networks:
       - mcp-network
 
@@ -229,6 +217,7 @@ services:
     command: npx -y wp-elementor-mcp
     networks:
       - mcp-network
+
 
 networks:
   mcp-network:
