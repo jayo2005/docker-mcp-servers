@@ -265,6 +265,56 @@ class GitHubMCPServer {
             required: ['owner', 'repo', 'path', 'message', 'content'],
           },
         },
+        {
+          name: 'push_files',
+          description: 'Push multiple files to a repository in a single commit',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              branch: {
+                type: 'string',
+                description: 'Branch name',
+                default: 'main',
+              },
+              message: {
+                type: 'string',
+                description: 'Commit message',
+              },
+              files: {
+                type: 'array',
+                description: 'Array of files to commit',
+                items: {
+                  type: 'object',
+                  properties: {
+                    path: {
+                      type: 'string',
+                      description: 'File path',
+                    },
+                    content: {
+                      type: 'string',
+                      description: 'File content',
+                    },
+                    mode: {
+                      type: 'string',
+                      description: 'File mode (100644 for file, 100755 for executable, 040000 for directory)',
+                      default: '100644',
+                    },
+                  },
+                  required: ['path', 'content'],
+                },
+              },
+            },
+            required: ['owner', 'repo', 'branch', 'message', 'files'],
+          },
+        },
       ],
     }));
 
@@ -354,6 +404,67 @@ class GitHubMCPServer {
             }
             
             result = await this.octokit.repos.createOrUpdateFileContents(params);
+            break;
+
+          case 'push_files':
+            // Get the latest commit SHA for the branch
+            const { data: refData } = await this.octokit.git.getRef({
+              owner: args.owner,
+              repo: args.repo,
+              ref: `heads/${args.branch || 'main'}`,
+            });
+            const latestCommitSha = refData.object.sha;
+
+            // Get the tree SHA of the latest commit
+            const { data: commitData } = await this.octokit.git.getCommit({
+              owner: args.owner,
+              repo: args.repo,
+              commit_sha: latestCommitSha,
+            });
+            const baseTreeSha = commitData.tree.sha;
+
+            // Create blobs for each file
+            const blobs = await Promise.all(
+              args.files.map(async (file) => {
+                const { data: blobData } = await this.octokit.git.createBlob({
+                  owner: args.owner,
+                  repo: args.repo,
+                  content: Buffer.from(file.content).toString('base64'),
+                  encoding: 'base64',
+                });
+                return {
+                  path: file.path,
+                  mode: file.mode || '100644',
+                  type: 'blob',
+                  sha: blobData.sha,
+                };
+              })
+            );
+
+            // Create a new tree
+            const { data: treeData } = await this.octokit.git.createTree({
+              owner: args.owner,
+              repo: args.repo,
+              tree: blobs,
+              base_tree: baseTreeSha,
+            });
+
+            // Create a new commit
+            const { data: newCommitData } = await this.octokit.git.createCommit({
+              owner: args.owner,
+              repo: args.repo,
+              message: args.message,
+              tree: treeData.sha,
+              parents: [latestCommitSha],
+            });
+
+            // Update the reference
+            result = await this.octokit.git.updateRef({
+              owner: args.owner,
+              repo: args.repo,
+              ref: `heads/${args.branch || 'main'}`,
+              sha: newCommitData.sha,
+            });
             break;
 
           default:
