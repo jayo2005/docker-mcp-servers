@@ -315,6 +315,373 @@ class GitHubMCPServer {
             required: ['owner', 'repo', 'branch', 'message', 'files'],
           },
         },
+        {
+          name: 'clone_repository',
+          description: 'Get all files from a repository (similar to git clone)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              branch: {
+                type: 'string',
+                description: 'Branch to clone',
+                default: 'main',
+              },
+              path: {
+                type: 'string',
+                description: 'Path prefix to filter files (optional)',
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'pull_changes',
+          description: 'Get latest changes from remote (list of changed files)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              branch: {
+                type: 'string',
+                description: 'Branch name',
+                default: 'main',
+              },
+              since: {
+                type: 'string',
+                description: 'ISO 8601 date to get changes since',
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'create_branch',
+          description: 'Create a new branch',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              branch: {
+                type: 'string',
+                description: 'New branch name',
+              },
+              from_branch: {
+                type: 'string',
+                description: 'Source branch',
+                default: 'main',
+              },
+            },
+            required: ['owner', 'repo', 'branch'],
+          },
+        },
+        {
+          name: 'delete_branch',
+          description: 'Delete a branch',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              branch: {
+                type: 'string',
+                description: 'Branch to delete',
+              },
+            },
+            required: ['owner', 'repo', 'branch'],
+          },
+        },
+        {
+          name: 'list_branches',
+          description: 'List all branches',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'get_commits',
+          description: 'Get commit history',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              sha: {
+                type: 'string',
+                description: 'SHA or branch to list commits from',
+                default: 'main',
+              },
+              per_page: {
+                type: 'number',
+                description: 'Number of commits per page',
+                default: 30,
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'get_commit_diff',
+          description: 'Get diff for a specific commit',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              sha: {
+                type: 'string',
+                description: 'Commit SHA',
+              },
+            },
+            required: ['owner', 'repo', 'sha'],
+          },
+        },
+        {
+          name: 'compare_branches',
+          description: 'Compare two branches',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              base: {
+                type: 'string',
+                description: 'Base branch',
+              },
+              head: {
+                type: 'string',
+                description: 'Head branch',
+              },
+            },
+            required: ['owner', 'repo', 'base', 'head'],
+          },
+        },
+        {
+          name: 'merge_branch',
+          description: 'Merge one branch into another',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              base: {
+                type: 'string',
+                description: 'Base branch to merge into',
+              },
+              head: {
+                type: 'string',
+                description: 'Head branch to merge from',
+              },
+              commit_message: {
+                type: 'string',
+                description: 'Merge commit message',
+              },
+            },
+            required: ['owner', 'repo', 'base', 'head'],
+          },
+        },
+        {
+          name: 'fork_repository',
+          description: 'Fork a repository',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              organization: {
+                type: 'string',
+                description: 'Optional organization to fork to',
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'sync_fork',
+          description: 'Sync fork with upstream repository',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Fork owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Fork repository name',
+              },
+              branch: {
+                type: 'string',
+                description: 'Branch to sync',
+                default: 'main',
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'delete_file',
+          description: 'Delete a file from repository',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              path: {
+                type: 'string',
+                description: 'File path to delete',
+              },
+              message: {
+                type: 'string',
+                description: 'Commit message',
+              },
+              branch: {
+                type: 'string',
+                description: 'Branch name',
+                default: 'main',
+              },
+              sha: {
+                type: 'string',
+                description: 'SHA of file to delete',
+              },
+            },
+            required: ['owner', 'repo', 'path', 'message', 'sha'],
+          },
+        },
+        {
+          name: 'search_code',
+          description: 'Search for code in repositories',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'Search query',
+              },
+              per_page: {
+                type: 'number',
+                description: 'Results per page',
+                default: 30,
+              },
+            },
+            required: ['query'],
+          },
+        },
+        {
+          name: 'get_repository_topics',
+          description: 'Get repository topics/tags',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
+        {
+          name: 'set_repository_topics',
+          description: 'Set repository topics/tags',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              topics: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Array of topics',
+              },
+            },
+            required: ['owner', 'repo', 'topics'],
+          },
+        },
       ],
     }));
 
@@ -404,6 +771,211 @@ class GitHubMCPServer {
             }
             
             result = await this.octokit.repos.createOrUpdateFileContents(params);
+            break;
+
+          case 'clone_repository':
+            // Get repository tree
+            const { data: tree } = await this.octokit.git.getTree({
+              owner: args.owner,
+              repo: args.repo,
+              tree_sha: args.branch || 'main',
+              recursive: true,
+            });
+
+            // Filter by path if provided
+            let files = tree.tree.filter(item => item.type === 'blob');
+            if (args.path) {
+              files = files.filter(item => item.path.startsWith(args.path));
+            }
+
+            // Get file contents
+            const fileContents = await Promise.all(
+              files.map(async (file) => {
+                try {
+                  const { data } = await this.octokit.repos.getContent({
+                    owner: args.owner,
+                    repo: args.repo,
+                    path: file.path,
+                    ref: args.branch || 'main',
+                  });
+                  return {
+                    path: file.path,
+                    content: Buffer.from(data.content, 'base64').toString('utf-8'),
+                    sha: data.sha,
+                  };
+                } catch (error) {
+                  return {
+                    path: file.path,
+                    error: error.message,
+                  };
+                }
+              })
+            );
+            result = { files: fileContents };
+            break;
+
+          case 'pull_changes':
+            // Get commits on branch
+            const { data: commits } = await this.octokit.repos.listCommits({
+              owner: args.owner,
+              repo: args.repo,
+              sha: args.branch || 'main',
+              since: args.since,
+              per_page: 100,
+            });
+
+            // Get changed files for each commit
+            const changes = await Promise.all(
+              commits.map(async (commit) => {
+                const { data: commitDetail } = await this.octokit.repos.getCommit({
+                  owner: args.owner,
+                  repo: args.repo,
+                  ref: commit.sha,
+                });
+                return {
+                  sha: commit.sha,
+                  message: commit.commit.message,
+                  author: commit.commit.author,
+                  date: commit.commit.author.date,
+                  files: commitDetail.files.map(f => ({
+                    path: f.filename,
+                    status: f.status,
+                    additions: f.additions,
+                    deletions: f.deletions,
+                  })),
+                };
+              })
+            );
+            result = { commits: changes };
+            break;
+
+          case 'create_branch':
+            // Get the SHA of the source branch
+            const { data: sourceBranch } = await this.octokit.git.getRef({
+              owner: args.owner,
+              repo: args.repo,
+              ref: `heads/${args.from_branch || 'main'}`,
+            });
+
+            // Create new branch
+            result = await this.octokit.git.createRef({
+              owner: args.owner,
+              repo: args.repo,
+              ref: `refs/heads/${args.branch}`,
+              sha: sourceBranch.object.sha,
+            });
+            break;
+
+          case 'delete_branch':
+            result = await this.octokit.git.deleteRef({
+              owner: args.owner,
+              repo: args.repo,
+              ref: `heads/${args.branch}`,
+            });
+            break;
+
+          case 'list_branches':
+            result = await this.octokit.repos.listBranches({
+              owner: args.owner,
+              repo: args.repo,
+              per_page: 100,
+            });
+            break;
+
+          case 'get_commits':
+            result = await this.octokit.repos.listCommits({
+              owner: args.owner,
+              repo: args.repo,
+              sha: args.sha || 'main',
+              per_page: args.per_page || 30,
+            });
+            break;
+
+          case 'get_commit_diff':
+            result = await this.octokit.repos.getCommit({
+              owner: args.owner,
+              repo: args.repo,
+              ref: args.sha,
+            });
+            break;
+
+          case 'compare_branches':
+            result = await this.octokit.repos.compareCommits({
+              owner: args.owner,
+              repo: args.repo,
+              base: args.base,
+              head: args.head,
+            });
+            break;
+
+          case 'merge_branch':
+            result = await this.octokit.repos.merge({
+              owner: args.owner,
+              repo: args.repo,
+              base: args.base,
+              head: args.head,
+              commit_message: args.commit_message,
+            });
+            break;
+
+          case 'fork_repository':
+            result = await this.octokit.repos.createFork({
+              owner: args.owner,
+              repo: args.repo,
+              organization: args.organization,
+            });
+            break;
+
+          case 'sync_fork':
+            // Get the upstream repository info
+            const { data: forkData } = await this.octokit.repos.get({
+              owner: args.owner,
+              repo: args.repo,
+            });
+
+            if (!forkData.parent) {
+              throw new Error('Repository is not a fork');
+            }
+
+            // Sync with upstream
+            result = await this.octokit.repos.mergeUpstream({
+              owner: args.owner,
+              repo: args.repo,
+              branch: args.branch || 'main',
+            });
+            break;
+
+          case 'delete_file':
+            result = await this.octokit.repos.deleteFile({
+              owner: args.owner,
+              repo: args.repo,
+              path: args.path,
+              message: args.message,
+              sha: args.sha,
+              branch: args.branch || 'main',
+            });
+            break;
+
+          case 'search_code':
+            result = await this.octokit.search.code({
+              q: args.query,
+              per_page: args.per_page || 30,
+            });
+            break;
+
+          case 'get_repository_topics':
+            result = await this.octokit.repos.getAllTopics({
+              owner: args.owner,
+              repo: args.repo,
+            });
+            break;
+
+          case 'set_repository_topics':
+            result = await this.octokit.repos.replaceAllTopics({
+              owner: args.owner,
+              repo: args.repo,
+              names: args.topics,
+            });
             break;
 
           case 'push_files':
