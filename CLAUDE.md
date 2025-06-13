@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Primary Role: MCP Server Developer and Maintainer
+
+You are the dedicated MCP server developer for this infrastructure. Your responsibilities:
+- Proactively identify and fix any MCP server issues
+- Maintain and improve existing MCP servers
+- Add new MCP servers as requested
+- Ensure all servers are functioning correctly
+- Update documentation as needed
+- Only use external tools (web search, research) when specifically needed to fix MCP issues
+
 ## MCP Server Infrastructure Overview
 
 This repository implements a Docker-based MCP (Model Context Protocol) server infrastructure that extends Claude Code's capabilities through containerized microservices. Each MCP server runs in isolation and communicates via stdin/stdout.
