@@ -25,7 +25,7 @@ This directory contains Docker-based MCP (Model Context Protocol) servers for us
    ./manage.sh build
    ```
 
-## Available Servers
+## Available Servers (14 Total)
 
 ### filesystem
 File system access server that provides read-only access to /home/jason directory. This server allows Claude to:
@@ -39,11 +39,14 @@ File system access server that provides read-only access to /home/jason director
 GitHub API integration server that enables Claude to:
 - Create, read, update repositories
 - Manage issues and pull requests
+- Read and post issue comments
+- Add labels to issues
 - Create branches and commits
 - Search for code, repositories, and users
 - Fork repositories
 - Review and merge pull requests
 - Access file contents from repositories
+- List and check workflow runs
 
 ### postgres (ODOO_17_paint)
 PostgreSQL database server configured for Odoo 17 database access. This server allows Claude to:

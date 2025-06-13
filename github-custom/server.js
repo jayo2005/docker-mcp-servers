@@ -682,6 +682,118 @@ class GitHubMCPServer {
             required: ['owner', 'repo', 'topics'],
           },
         },
+        {
+          name: 'get_issue_comments',
+          description: 'Get comments on an issue',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              issue_number: {
+                type: 'number',
+                description: 'Issue number',
+              },
+              per_page: {
+                type: 'number',
+                description: 'Results per page',
+                default: 30,
+              },
+            },
+            required: ['owner', 'repo', 'issue_number'],
+          },
+        },
+        {
+          name: 'create_issue_comment',
+          description: 'Create a comment on an issue',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              issue_number: {
+                type: 'number',
+                description: 'Issue number',
+              },
+              body: {
+                type: 'string',
+                description: 'Comment body',
+              },
+            },
+            required: ['owner', 'repo', 'issue_number', 'body'],
+          },
+        },
+        {
+          name: 'add_issue_labels',
+          description: 'Add labels to an issue',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              issue_number: {
+                type: 'number',
+                description: 'Issue number',
+              },
+              labels: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Array of label names to add',
+              },
+            },
+            required: ['owner', 'repo', 'issue_number', 'labels'],
+          },
+        },
+        {
+          name: 'list_workflow_runs',
+          description: 'List workflow runs for a repository',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              workflow_id: {
+                type: 'string',
+                description: 'Workflow ID or filename (optional)',
+              },
+              status: {
+                type: 'string',
+                enum: ['completed', 'action_required', 'cancelled', 'failure', 'neutral', 'skipped', 'stale', 'success', 'timed_out', 'in_progress', 'queued', 'requested', 'waiting'],
+                description: 'Filter by status',
+              },
+              per_page: {
+                type: 'number',
+                description: 'Results per page',
+                default: 30,
+              },
+            },
+            required: ['owner', 'repo'],
+          },
+        },
       ],
     }));
 
@@ -1037,6 +1149,48 @@ class GitHubMCPServer {
               ref: `heads/${args.branch || 'main'}`,
               sha: newCommitData.sha,
             });
+            break;
+
+          case 'get_issue_comments':
+            result = await this.octokit.issues.listComments({
+              owner: args.owner,
+              repo: args.repo,
+              issue_number: args.issue_number,
+              per_page: args.per_page || 30,
+            });
+            break;
+
+          case 'create_issue_comment':
+            result = await this.octokit.issues.createComment({
+              owner: args.owner,
+              repo: args.repo,
+              issue_number: args.issue_number,
+              body: args.body,
+            });
+            break;
+
+          case 'add_issue_labels':
+            result = await this.octokit.issues.addLabels({
+              owner: args.owner,
+              repo: args.repo,
+              issue_number: args.issue_number,
+              labels: args.labels,
+            });
+            break;
+
+          case 'list_workflow_runs':
+            const workflowParams = {
+              owner: args.owner,
+              repo: args.repo,
+              per_page: args.per_page || 30,
+            };
+            if (args.workflow_id) {
+              workflowParams.workflow_id = args.workflow_id;
+            }
+            if (args.status) {
+              workflowParams.status = args.status;
+            }
+            result = await this.octokit.actions.listWorkflowRunsForRepo(workflowParams);
             break;
 
           default:

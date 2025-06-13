@@ -16,7 +16,7 @@ You are the dedicated MCP server developer for this infrastructure. Your respons
 
 This repository implements a Docker-based MCP (Model Context Protocol) server infrastructure that extends Claude Code's capabilities through containerized microservices. Each MCP server runs in isolation and communicates via stdin/stdout.
 
-Currently hosting 13 MCP servers providing capabilities for:
+Currently hosting 14 MCP servers providing capabilities for:
 - File system access and GitHub integration
 - Database access (PostgreSQL, MSSQL)
 - Odoo ERP integration (multiple versions, SQL & API)
@@ -24,6 +24,7 @@ Currently hosting 13 MCP servers providing capabilities for:
 - Excel file manipulation
 - Web search and AI-powered deep research
 - WordPress and Elementor page builder integration
+- WhatsApp Cloud API for messaging and media
 
 ## Essential Commands
 
@@ -117,19 +118,20 @@ claude mcp list
 4. **excel** - Excel file manipulation
 5. **duckduckgo** - Web search
 6. **octagon-deep-research** - AI-powered deep research (requires OCTAGON_API_KEY in .env)
+7. **whatsapp** - WhatsApp Cloud API for messaging and media (requires WhatsApp credentials in .env)
 
 ### Database Servers
-7. **ODOO_17_paint** - PostgreSQL/Odoo 17 database direct SQL access
-8. **Sage_MSSQL** - Microsoft SQL Server for Sage/AdvanceCoatings
+8. **ODOO_17_paint** - PostgreSQL/Odoo 17 database direct SQL access
+9. **Sage_MSSQL** - Microsoft SQL Server for Sage/AdvanceCoatings
 
 ### Odoo API Servers
-9. **ODOO_MCP** - Universal Odoo API server (works with v12-v17+)
-10. **ODOO16** - Dedicated Odoo v16 API access
-11. **ODOO17** - Dedicated Odoo v17 API access
+10. **ODOO_MCP** - Universal Odoo API server (works with v12-v17+)
+11. **ODOO16** - Dedicated Odoo v16 API access
+12. **ODOO17** - Dedicated Odoo v17 API access
 
 ### WordPress/Web Development
-12. **wordpress** - WordPress REST API access
-13. **elementor** - Elementor page builder integration
+13. **wordpress** - WordPress REST API access
+14. **elementor** - Elementor page builder integration
 
 ## Quick Registration Commands
 
