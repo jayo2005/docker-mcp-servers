@@ -91,6 +91,18 @@ Octagon Deep Research server that provides Claude with:
 - Advanced deep research agents integration
 - Specialized research synthesis and analysis
 
+### whatsapp
+WhatsApp Cloud API server that enables Claude to:
+- Send text messages to WhatsApp users
+- Send template messages (pre-approved marketing/utility messages)
+- Send media files (images, videos, documents, audio)
+- Create and manage message templates
+- Mark messages as read
+- Get webhook configuration for receiving messages
+- Manage WhatsApp Business phone numbers
+- FREE unlimited service conversations (customer support)
+- Receive photos and create support tickets in Odoo
+
 ### Sage_MSSQL
 Microsoft SQL Server database server for Sage/AdvanceCoatings access. This server enables Claude to:
 - Execute read-only SQL queries on MSSQL databases
@@ -402,6 +414,7 @@ claude mcp add excel /home/jason/MCP_SERVERS/scripts/mcp-excel.sh
 claude mcp add duckduckgo /home/jason/MCP_SERVERS/scripts/mcp-duckduckgo.sh
 claude mcp add puppeteer /home/jason/MCP_SERVERS/scripts/mcp-puppeteer.sh
 claude mcp add octagon-deep-research /home/jason/MCP_SERVERS/scripts/mcp-octagon-deep-research.sh
+claude mcp add whatsapp /home/jason/MCP_SERVERS/scripts/mcp-whatsapp.sh
 
 # Database servers
 claude mcp add ODOO_17_paint /home/jason/MCP_SERVERS/scripts/mcp-odoo-17-paint.sh

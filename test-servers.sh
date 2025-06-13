@@ -31,4 +31,8 @@ timeout 5s docker compose run --rm mcp-duckduckgo npx -y @oevortex/ddg_search --
 echo -e "\n7. Testing Octagon Deep Research MCP Server:"
 timeout 5s docker compose run --rm mcp-octagon-deep-research npx -y octagon-deep-research-mcp@latest --help 2>&1 | head -5
 
+# Test WhatsApp server
+echo -e "\n8. Testing WhatsApp MCP Server:"
+echo '{"jsonrpc": "2.0", "method": "initialize", "params": {"protocolVersion": "2024-11-05", "clientInfo": {"name": "test", "version": "1.0.0"}, "capabilities": {}}, "id": 1}' | timeout 5s docker compose run --rm -i mcp-whatsapp 2>&1 | grep -E "(serverInfo|error)" | head -5
+
 echo -e "\nAll tests completed!"
