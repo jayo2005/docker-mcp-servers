@@ -204,6 +204,8 @@ claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
 - Full support for all GitHub operations including repository creation
 - Located in `/github-custom/` directory with custom Dockerfile
 - Automatically used when you run the standard GitHub MCP server
+- Contains 28 tools including: repository creation, issue management, pull requests, workflow runs, labels, and comments
+- **Important**: If experiencing authentication issues, check for conflicting MCP servers (e.g., Cline's GitHub MCP) and remove them
 
 ## Troubleshooting
 
@@ -223,6 +225,14 @@ claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
 - **API key errors**: Check .env file has correct API keys (GITHUB_TOKEN, OCTAGON_API_KEY)
 - **Database connection fails**: Ensure PostgreSQL is running on host and accepting connections
 - **Permission denied**: Make wrapper scripts executable with `chmod +x scripts/*.sh`
+- **GitHub MCP "Unauthorized" errors**: If GitHub MCP shows authentication errors in Claude but works via direct testing:
+  - The MCP server itself is working correctly (test with `echo '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}' | ./scripts/mcp-github.sh`)
+  - Issue is with Claude's MCP connection caching
+  - Check for conflicting MCP servers: Run `claude mcp list | grep -i github` - should only show one entry
+  - Common cause: Cline or other tools may have registered their own GitHub MCP servers
+  - Solution: Remove conflicting servers and ensure only `/home/jason/MCP_SERVERS/scripts/mcp-github.sh` is registered
+  - Workaround: Use `gh` CLI commands instead (e.g., `gh repo create`, `gh issue create`)
+  - Fix: Refresh Claude page or restart Claude Code to clear MCP cache
 
 ### Odoo MCP Server Specific Issues
 

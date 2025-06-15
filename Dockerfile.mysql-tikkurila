@@ -1,0 +1,22 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git
+
+RUN adduser -D -s /bin/bash mcpuser
+
+WORKDIR /app
+
+RUN chown -R mcpuser:mcpuser /app
+
+COPY --chown=mcpuser:mcpuser mysql-tikkurila-server/package*.json ./
+
+USER mcpuser
+
+COPY --chown=mcpuser:mcpuser mysql-tikkurila-server/ ./
+
+RUN npm install && npm run build
+
+CMD ["node", "./build/index.js"]

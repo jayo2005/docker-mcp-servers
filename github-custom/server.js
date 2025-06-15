@@ -16,6 +16,7 @@ if (!GITHUB_TOKEN) {
 
 class GitHubMCPServer {
   constructor() {
+    console.error('GitHub Token:', GITHUB_TOKEN ? `${GITHUB_TOKEN.substring(0, 10)}...` : 'NOT SET');
     this.octokit = new Octokit({
       auth: GITHUB_TOKEN,
     });
@@ -1206,6 +1207,11 @@ class GitHubMCPServer {
           ],
         };
       } catch (error) {
+        console.error('GitHub API Error Details:');
+        console.error('Message:', error.message);
+        console.error('Status:', error.status);
+        console.error('Response:', error.response?.data);
+        console.error('Full error:', error);
         return {
           content: [
             {

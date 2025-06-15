@@ -236,6 +236,40 @@ services:
     networks:
       - mcp-network
 
+  mcp-mysql-tikkurila:
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql-tikkurila
+    container_name: mcp-mysql-tikkurila
+    environment:
+      - MYSQL_HOST=${MYSQL_TIKKURILA_HOST:-host.docker.internal}
+      - MYSQL_PORT=${MYSQL_TIKKURILA_PORT:-3306}
+      - MYSQL_USER=${MYSQL_TIKKURILA_USER}
+      - MYSQL_PASSWORD=${MYSQL_TIKKURILA_PASSWORD}
+      - MYSQL_DATABASE1=${MYSQL_TIKKURILA_DATABASE1}
+      - MYSQL_DATABASE2=${MYSQL_TIKKURILA_DATABASE2}
+    stdin_open: true
+    tty: false
+    user: mcpuser
+    networks:
+      - mcp-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mcp-magento-mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile.magento-mysql
+    container_name: mcp-magento-mysql
+    environment:
+      - MAGENTO_DB_USER=${MAGENTO_DB_USER}
+      - MAGENTO_DB_PASSWORD=${MAGENTO_DB_PASSWORD}
+    stdin_open: true
+    tty: false
+    user: mcpuser
+    networks:
+      - mcp-network
+
 
 networks:
   mcp-network:
