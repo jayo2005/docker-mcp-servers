@@ -133,19 +133,20 @@ claude mcp list
 ### Database Servers
 8. **ODOO_17_paint** - PostgreSQL/Odoo 17 database direct SQL access
 9. **Sage_MSSQL** - Microsoft SQL Server for Sage/AdvanceCoatings
+10. **mysql-tikkurila** - MySQL for Tikkurila paint (dual DB support)
+11. **magento-mysql** - MySQL for Magento e-commerce
 
 ### Odoo API Servers
-10. **ODOO_MCP** - Universal Odoo API server (works with v12-v17+)
-11. **ODOO16** - Dedicated Odoo v16 API access
-12. **ODOO17** - Dedicated Odoo v17 API access
+12. **ODOO_MCP** - Universal Odoo API server (works with v12-v17+)
+13. **ODOO16** - Dedicated Odoo v16 API access
+14. **ODOO17** - Dedicated Odoo v17 API access
 
 ### WordPress/Web Development
-13. **wordpress** - WordPress REST API access
-14. **elementor** - Elementor page builder integration
+15. **wordpress** - WordPress REST API access
+16. **elementor** - Elementor page builder integration
 
-### MySQL Servers
-15. **mysql-tikkurila** - Tikkurila paint database with dual database support
-16. **magento-mysql** - Magento e-commerce MySQL database (port.softcroft.ie:40000)
+### Documentation
+17. **softcroft-doc** - BookStack documentation manager for Sage 200 to Odoo 17 migration
 
 ## Quick Registration Commands
 
@@ -159,6 +160,7 @@ claude mcp add puppeteer /home/jason/MCP_SERVERS/scripts/mcp-puppeteer.sh
 claude mcp add excel /home/jason/MCP_SERVERS/scripts/mcp-excel.sh
 claude mcp add duckduckgo /home/jason/MCP_SERVERS/scripts/mcp-duckduckgo.sh
 claude mcp add octagon-deep-research /home/jason/MCP_SERVERS/scripts/mcp-octagon-deep-research.sh
+claude mcp add whatsapp /home/jason/MCP_SERVERS/scripts/mcp-whatsapp.sh
 
 # Database servers
 claude mcp add ODOO_17_paint /home/jason/MCP_SERVERS/scripts/mcp-odoo-17-paint.sh
@@ -176,6 +178,9 @@ claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
 # MySQL servers
 claude mcp add mysql-tikkurila /home/jason/MCP_SERVERS/scripts/mcp-mysql-tikkurila.sh
 claude mcp add magento-mysql /home/jason/MCP_SERVERS/scripts/mcp-magento-mysql.sh
+
+# Documentation
+claude mcp add softcroft-doc /home/jason/MCP_SERVERS/scripts/mcp-softcroft-doc.sh
 ```
 
 ## Server-Specific Notes
@@ -222,7 +227,7 @@ claude mcp add magento-mysql /home/jason/MCP_SERVERS/scripts/mcp-magento-mysql.s
 - Full support for all GitHub operations including repository creation
 - Located in `/github-custom/` directory with custom Dockerfile
 - Automatically used when you run the standard GitHub MCP server
-- Contains 28 tools including: repository creation, issue management, pull requests, workflow runs, labels, and comments
+- Contains 29 tools including: repository creation, issue management (create, close, comment), pull requests, workflow runs, labels, and comments
 - **Important**: If experiencing authentication issues, check for conflicting MCP servers (e.g., Cline's GitHub MCP) and remove them
 
 ### MySQL Tikkurila Server
@@ -242,6 +247,14 @@ claude mcp add magento-mysql /home/jason/MCP_SERVERS/scripts/mcp-magento-mysql.s
 - 6 specialized tools for paint/color product management
 - Tools include: get_colour_categories, get_colour_products, get_colour_ranges, execute_query
 - Custom Dockerfile for TypeScript compilation
+
+### SoftCroft Doc Server
+- BookStack documentation management for Sage 200 to Odoo 17 migration
+- Live URL: https://docs.softcroft.ie
+- Requires API credentials: BOOKSTACK_API_TOKEN_ID and BOOKSTACK_API_TOKEN_SECRET
+- Part of multi-agent system (Sage Agent, Odoo Agent, Doc Server Agent, Coding Agent)
+- Tools for querying and managing documentation across migration project
+- Manages 4 main books: Sage 200 Documentation, Odoo 17 Documentation, Migration Guide, API & Entity Mappings
 
 ## Troubleshooting
 

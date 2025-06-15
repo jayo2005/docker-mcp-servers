@@ -795,6 +795,34 @@ class GitHubMCPServer {
             required: ['owner', 'repo'],
           },
         },
+        {
+          name: 'close_issue',
+          description: 'Close an issue',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              owner: {
+                type: 'string',
+                description: 'Repository owner',
+              },
+              repo: {
+                type: 'string',
+                description: 'Repository name',
+              },
+              issue_number: {
+                type: 'number',
+                description: 'Issue number',
+              },
+              state_reason: {
+                type: 'string',
+                enum: ['completed', 'not_planned'],
+                description: 'Reason for closing (completed or not_planned)',
+                default: 'completed',
+              },
+            },
+            required: ['owner', 'repo', 'issue_number'],
+          },
+        },
       ],
     }));
 
@@ -1192,6 +1220,16 @@ class GitHubMCPServer {
               workflowParams.status = args.status;
             }
             result = await this.octokit.actions.listWorkflowRunsForRepo(workflowParams);
+            break;
+
+          case 'close_issue':
+            result = await this.octokit.issues.update({
+              owner: args.owner,
+              repo: args.repo,
+              issue_number: args.issue_number,
+              state: 'closed',
+              state_reason: args.state_reason || 'completed',
+            });
             break;
 
           default:

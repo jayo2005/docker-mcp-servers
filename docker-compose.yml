@@ -270,6 +270,20 @@ services:
     networks:
       - mcp-network
 
+  mcp-softcroft-doc:
+    build:
+      context: .
+      dockerfile: Dockerfile.softcroft-doc
+    container_name: mcp-softcroft-doc
+    environment:
+      - BOOKSTACK_API_URL=${BOOKSTACK_API_URL:-https://docs.softcroft.ie/api}
+      - API_TOKEN_ID=${BOOKSTACK_API_TOKEN_ID}
+      - API_TOKEN_SECRET=${BOOKSTACK_API_TOKEN_SECRET}
+    stdin_open: true
+    tty: false
+    user: mcpuser
+    networks:
+      - mcp-network
 
 networks:
   mcp-network:

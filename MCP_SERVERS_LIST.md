@@ -1,6 +1,6 @@
 # MCP Servers List - Quick Reference
 
-## Available MCP Servers (16 Total)
+## Available MCP Servers (17 Total)
 
 ### How to Add/Remove MCP Servers
 
@@ -29,7 +29,7 @@ claude mcp list
 - **Remove**: `claude mcp remove filesystem`
 
 ### 2. github
-- **Description**: GitHub API access (28 tools)
+- **Description**: GitHub API access (29 tools including close_issue)
 - **Add**: `claude mcp add github /home/jason/MCP_SERVERS/scripts/mcp-github.sh`
 - **Remove**: `claude mcp remove github`
 
@@ -117,6 +117,15 @@ claude mcp list
 
 ---
 
+## 📖 Documentation Server
+
+### 17. softcroft-doc
+- **Description**: BookStack documentation manager for Sage 200 to Odoo 17 migration
+- **Add**: `claude mcp add softcroft-doc /home/jason/MCP_SERVERS/scripts/mcp-softcroft-doc.sh`
+- **Remove**: `claude mcp remove softcroft-doc`
+
+---
+
 ## 📝 Quick Tips
 
 1. **MCP servers are registered per-project** - You need to add them in each project directory
@@ -148,4 +157,5 @@ claude mcp add ODOO16 /home/jason/MCP_SERVERS/scripts/mcp-odoo16.sh
 claude mcp add ODOO17 /home/jason/MCP_SERVERS/scripts/mcp-odoo17.sh
 claude mcp add wordpress /home/jason/MCP_SERVERS/scripts/mcp-wordpress.sh
 claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
+claude mcp add softcroft-doc /home/jason/MCP_SERVERS/scripts/mcp-softcroft-doc.sh
 ```
