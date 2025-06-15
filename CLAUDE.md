@@ -16,15 +16,16 @@ You are the dedicated MCP server developer for this infrastructure. Your respons
 
 This repository implements a Docker-based MCP (Model Context Protocol) server infrastructure that extends Claude Code's capabilities through containerized microservices. Each MCP server runs in isolation and communicates via stdin/stdout.
 
-Currently hosting 14 MCP servers providing capabilities for:
+Currently hosting 16 MCP servers providing capabilities for:
 - File system access and GitHub integration
-- Database access (PostgreSQL, MSSQL)
+- Database access (PostgreSQL, MSSQL, MySQL)
 - Odoo ERP integration (multiple versions, SQL & API)
 - Browser automation and web scraping
 - Excel file manipulation
 - Web search and AI-powered deep research
 - WordPress and Elementor page builder integration
 - WhatsApp Cloud API for messaging and media
+- MySQL databases for Tikkurila paint and Magento e-commerce
 
 ## Essential Commands
 
@@ -133,6 +134,10 @@ claude mcp list
 13. **wordpress** - WordPress REST API access
 14. **elementor** - Elementor page builder integration
 
+### MySQL Servers
+15. **mysql-tikkurila** - Tikkurila paint database with dual database support
+16. **magento-mysql** - Magento e-commerce MySQL database (port.softcroft.ie:40000)
+
 ## Quick Registration Commands
 
 From your project directory, run these commands to register all MCP servers:
@@ -158,6 +163,10 @@ claude mcp add ODOO17 /home/jason/MCP_SERVERS/scripts/mcp-odoo17.sh
 # WordPress/Web development
 claude mcp add wordpress /home/jason/MCP_SERVERS/scripts/mcp-wordpress.sh
 claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
+
+# MySQL servers
+claude mcp add mysql-tikkurila /home/jason/MCP_SERVERS/scripts/mcp-mysql-tikkurila.sh
+claude mcp add magento-mysql /home/jason/MCP_SERVERS/scripts/mcp-magento-mysql.sh
 ```
 
 ## Server-Specific Notes
@@ -206,6 +215,24 @@ claude mcp add elementor /home/jason/MCP_SERVERS/scripts/mcp-elementor.sh
 - Automatically used when you run the standard GitHub MCP server
 - Contains 28 tools including: repository creation, issue management, pull requests, workflow runs, labels, and comments
 - **Important**: If experiencing authentication issues, check for conflicting MCP servers (e.g., Cline's GitHub MCP) and remove them
+
+### MySQL Tikkurila Server
+- TypeScript-based MCP server for Tikkurila paint mixing databases
+- Supports dual database connections (MYSQL_DATABASE1 and MYSQL_DATABASE2)
+- Credentials: Set MYSQL_TIKKURILA_HOST, USER, PASSWORD, DATABASE1, DATABASE2 in .env
+- Tools include: get_base_paints, get_products, get_color_cards, execute_query
+- execute_query tool accepts database parameter (1 or 2) to specify which database
+- Pre-defined tools query database 1 by default
+- Custom Dockerfile for TypeScript compilation
+
+### Magento MySQL Server
+- TypeScript-based MCP server for Magento e-commerce database
+- Host: port.softcroft.ie:40000
+- Database: a35dda22_mage2
+- Credentials: Set MAGENTO_DB_USER and MAGENTO_DB_PASSWORD in .env
+- 6 specialized tools for paint/color product management
+- Tools include: get_colour_categories, get_colour_products, get_colour_ranges, execute_query
+- Custom Dockerfile for TypeScript compilation
 
 ## Troubleshooting
 
