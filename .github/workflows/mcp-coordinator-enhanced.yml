@@ -1,0 +1,33 @@
+name: MCP Server Coordinator Enhanced
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Run every 30 minutes
+  workflow_dispatch:  # Allow manual runs
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created, edited]  # NEW: Trigger on comments!
+
+jobs:
+  mcp-coordinator:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        pip install PyGithub
+    
+    - name: Run MCP Server Coordinator Enhanced
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python agents/mcp_server_coordinator_enhanced.py
