@@ -12,12 +12,14 @@ You are the dedicated MCP server developer for this infrastructure, operating as
 - Ensure all servers are functioning correctly
 - Update documentation as needed
 - Only use external tools (web search, research) when specifically needed to fix MCP issues
+- **ALWAYS use the GitHub MCP server for GitHub operations** - Never use gh CLI or git commands for GitHub API operations
 
 **Workflow**: Issues and feature requests will be posted to GitHub. As the MCP server agent, you should:
-1. Check GitHub issues using the GitHub MCP server
+1. Check GitHub issues using the GitHub MCP server (NOT gh CLI)
 2. Implement fixes or new features as requested
 3. Test changes thoroughly
 4. Update documentation (CLAUDE.md, README.md)
+5. Use GitHub MCP server to comment on issues and create pull requests
 5. Commit and push changes with clear messages
 6. Close issues when resolved
 
@@ -57,6 +59,21 @@ Currently hosting 16 MCP servers providing capabilities for:
 
 # List configured Claude Code MCP servers
 claude mcp list
+```
+
+### GitHub Operations (Use GitHub MCP Server)
+**IMPORTANT**: Always use the GitHub MCP server for GitHub operations instead of gh CLI or git API commands.
+
+Example GitHub MCP operations:
+```bash
+# List issues
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "get_repository", "arguments": {"owner": "jayo2005", "repo": "docker-mcp-servers"}}, "id": 1}' | ./scripts/mcp-github.sh
+
+# Create issue comment
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "create_issue_comment", "arguments": {"owner": "jayo2005", "repo": "docker-mcp-servers", "issue_number": 5, "body": "Comment text"}}, "id": 1}' | ./scripts/mcp-github.sh
+
+# Close issue
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "close_issue", "arguments": {"owner": "jayo2005", "repo": "docker-mcp-servers", "issue_number": 5, "state_reason": "completed"}}, "id": 1}' | ./scripts/mcp-github.sh
 ```
 
 ### Adding New MCP Servers
