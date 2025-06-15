@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from github import Github
 import base64
+import re
 
 # Setup logging
 logging.basicConfig(
@@ -21,10 +22,13 @@ logger = logging.getLogger(__name__)
 class MCPServerCoordinator:
     def __init__(self):
         self.github_token = os.environ.get('GITHUB_TOKEN')
+        self.cross_repo_token = os.environ.get('CROSS_REPO_TOKEN', self.github_token)
+        
         if not self.github_token:
             raise ValueError("GITHUB_TOKEN environment variable not set")
         
         self.g = Github(self.github_token)
+        self.cross_g = Github(self.cross_repo_token)
         
         # MCP Server inventory
         self.mcp_servers = {
@@ -111,14 +115,40 @@ class MCPServerCoordinator:
             'project-manager': ['github', 'filesystem']
         }
     
+    def extract_parent_issue(self, body):
+        """Extract parent issue URL from body"""
+        if not body:
+            return None
+        
+        # Look for GitHub issue URLs
+        pattern = r'https://github\.com/([^/]+)/([^/]+)/issues/(\d+)'
+        match = re.search(pattern, body)
+        
+        if match:
+            owner = match.group(1)
+            repo = match.group(2)
+            issue_num = int(match.group(3))
+            return {
+                'owner': owner,
+                'repo': repo,
+                'issue_number': issue_num,
+                'url': match.group(0)
+            }
+        
+        return None
+    
     def analyze_mcp_request(self, issue_title, issue_body):
         """Analyze the issue to provide MCP guidance"""
         title_lower = issue_title.lower()
         body_lower = issue_body.lower() if issue_body else ""
         full_text = title_lower + " " + body_lower
         
+        # Specific handling for filesystem MCP questions
+        if 'filesystem' in full_text:
+            return self.provide_filesystem_guidance()
+        
         # Check for specific MCP server mentions
-        if any(word in full_text for word in ['permission', 'access denied', 'connection', 'error']):
+        elif any(word in full_text for word in ['permission', 'access denied', 'connection', 'error']):
             return self.handle_permission_issue(issue_title, issue_body)
         
         elif any(word in full_text for word in ['available', 'list', 'what mcp', 'which servers']):
@@ -136,9 +166,88 @@ class MCPServerCoordinator:
         else:
             return self.general_mcp_response(issue_title)
     
+    def provide_filesystem_guidance(self):
+        """Provide detailed filesystem MCP guidance"""
+        return """## 🗂️ Filesystem MCP Server - Detailed Guide
+
+### What is the Filesystem MCP Server?
+
+The **filesystem MCP server** is a secure file access tool that provides:
+- **Read-only** access to files and directories
+- Restricted to `/home/jason` directory only
+- Runs inside a Docker container for isolation
+- Cannot modify, delete, or execute any files
+
+### What Our Agents Use It For:
+
+1. **Reading Configuration Files**
+   - `CLAUDE.md` - Project instructions
+   - `.env` files - Environment configurations
+   - `odoo.conf` - Odoo configuration
+
+2. **Searching Project Files**
+   - Finding Python scripts
+   - Locating documentation
+   - Discovering module structures
+
+3. **Understanding Project Layout**
+   - Listing directory contents
+   - Checking file modifications
+   - Mapping project structure
+
+### Your Key Question Answered:
+
+> "If I give Claude filesystem access through MCP, does this mean it won't ask me questions and just goes ahead and does things?"
+
+**Answer**: The filesystem MCP is **READ-ONLY**, which means:
+
+✅ **What Claude CAN do autonomously:**
+- Read any file in `/home/jason` without asking
+- Search for information in your files
+- List directory contents
+- Check when files were last modified
+- Understand your project structure
+
+❌ **What Claude CANNOT do:**
+- Modify any files
+- Delete any files
+- Create new files
+- Execute scripts or programs
+- Access files outside `/home/jason`
+- Change file permissions
+
+### Security Considerations:
+
+1. **Isolation**: Runs in Docker container
+2. **Read-only mount**: `-v /home/jason:/home/jason:ro`
+3. **No execution rights**: Cannot run commands
+4. **Path restriction**: Limited to your home directory
+5. **No network access**: From filesystem operations
+
+### Example Usage:
+
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "read_file",
+    "arguments": {
+      "path": "/home/jason/Paint_Agents/CLAUDE.md"
+    }
+  }
+}
+```
+
+### Bottom Line:
+
+The filesystem MCP makes Claude more **autonomous for research** but maintains **safety for modifications**. Claude can learn about your project faster but still needs your permission to make changes.
+
+---
+*MCP Server Coordinator - Ensuring safe and efficient file access*"""
+    
     def handle_permission_issue(self, title, body):
         """Handle MCP permission and connection issues"""
-        return f"""## 🔧 MCP Server Coordinator Response - Troubleshooting
+        return f"""## 🛠️ MCP Server Coordinator Response - Troubleshooting
 
 ### Common MCP Server Issues:
 
@@ -160,7 +269,7 @@ class MCPServerCoordinator:
 ### Quick Diagnostics:
 ```bash
 # Test MCP server
-echo '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}' | ./scripts/mcp-<server>.sh
+echo '{{"jsonrpc": "2.0", "method": "tools/list", "id": 1}}' | ./scripts/mcp-<server>.sh
 
 # Check Docker status
 docker compose ps
@@ -216,7 +325,7 @@ claude mcp add github /home/jason/MCP_SERVERS/scripts/mcp-github.sh
     
     def provide_sage_guidance(self):
         """Provide Sage MSSQL specific guidance"""
-        return """## 🗜️ Sage MSSQL Server Guide
+        return """## 🗄️ Sage MSSQL Server Guide
 
 ### Connection Details:
 - **Server**: 192.168.20.188
@@ -306,7 +415,7 @@ ODOO17_PASSWORD=Sc00tZujeva
     
     def general_mcp_response(self, title):
         """General MCP guidance"""
-        return f"""## 🔧 MCP Server Coordinator Response
+        return f"""## 🛠️ MCP Server Coordinator Response
 
 ### How can I help with: "{title}"?
 
@@ -340,6 +449,92 @@ Please provide more details about your MCP-related need!
 ---
 *MCP Server Coordinator - Your MCP infrastructure support*"""
     
+    def handle_setup_request(self, title, body):
+        """Handle MCP setup requests"""
+        return """## 🚀 MCP Server Setup Guide
+
+### Quick Start:
+1. Clone the docker-mcp-servers repository
+2. Copy `.env.example` to `.env`
+3. Configure your credentials
+4. Run `docker compose up -d`
+5. Register servers with Claude
+
+### Registration Commands:
+```bash
+# Core servers
+claude mcp add filesystem /home/jason/MCP_SERVERS/scripts/mcp-filesystem.sh
+claude mcp add github /home/jason/MCP_SERVERS/scripts/mcp-github.sh
+
+# Database servers
+claude mcp add postgres /home/jason/MCP_SERVERS/scripts/mcp-odoo-17-paint.sh
+claude mcp add sage_mssql /home/jason/MCP_SERVERS/scripts/mcp-sage-mssql.sh
+
+# See full list in README.md
+```
+
+### Environment Setup (.env):
+```bash
+# GitHub
+GITHUB_TOKEN=your_github_pat
+
+# Odoo
+ODOO17_URL=http://host.docker.internal:8069
+ODOO17_DB=your_database
+ODOO17_USER=your_email
+ODOO17_PASSWORD=your_password
+
+# SQL Server
+MSSQL_SERVER=192.168.20.188
+MSSQL_DATABASE=AdvanceCoatings
+MSSQL_USER=sa
+MSSQL_PASSWORD=Sc00tZujeva
+```
+
+### Verification:
+```bash
+# Check all servers
+docker compose ps
+
+# Test a server
+echo '{"jsonrpc": "2.0", "method": "tools/list", "id": 1}' | ./scripts/mcp-filesystem.sh
+```
+
+---
+*Step-by-step setup assistance available*"""
+    
+    def notify_parent_issue(self, issue, response, parent_info):
+        """Notify the parent issue about completion"""
+        try:
+            # Get parent repository and issue
+            parent_repo = self.cross_g.get_repo(f"{parent_info['owner']}/{parent_info['repo']}")
+            parent_issue = parent_repo.get_issue(parent_info['issue_number'])
+            
+            # Create completion summary
+            summary = f"""## 🛠️ MCP Server Coordinator - Task Complete
+
+I've responded to the delegated MCP server inquiry in: {issue.html_url}
+
+### Summary:
+The request was about understanding the filesystem MCP server. I provided:
+- Detailed explanation of what the filesystem MCP is
+- Security features (read-only access)
+- What agents use it for
+- Clear answer about autonomous behavior
+
+### Key Point:
+The filesystem MCP is **read-only** - Claude can read files autonomously but cannot modify anything without explicit permission.
+
+---
+*Response delivered by MCP Server Coordinator*"""
+            
+            # Post to parent issue
+            parent_issue.create_comment(summary)
+            logger.info(f"Notified parent issue: {parent_info['url']}")
+            
+        except Exception as e:
+            logger.error(f"Error notifying parent issue: {e}")
+    
     def process_mcp_issues(self):
         """Monitor all repositories for MCP-related issues"""
         repos_to_monitor = [
@@ -367,7 +562,8 @@ Please provide more details about your MCP-related need!
                     body_lower = issue.body.lower() if issue.body else ""
                     
                     mcp_keywords = ['mcp', 'server', 'permission', 'docker', 'connection', 
-                                   'xml-rpc', 'api', 'access denied', 'puppeteer', 'mssql']
+                                   'xml-rpc', 'api', 'access denied', 'puppeteer', 'mssql',
+                                   'filesystem']
                     
                     if any(keyword in title_lower + ' ' + body_lower for keyword in mcp_keywords):
                         logger.info(f"Found MCP issue in {repo_name} #{issue.number}")
@@ -375,6 +571,13 @@ Please provide more details about your MCP-related need!
                         # Analyze and respond
                         response = self.analyze_mcp_request(issue.title, issue.body)
                         issue.create_comment(response)
+                        
+                        # Check if this is from Project Manager
+                        if 'from-pm' in labels:
+                            parent_info = self.extract_parent_issue(issue.body)
+                            if parent_info:
+                                logger.info(f"This is a PM delegation - notifying parent issue")
+                                self.notify_parent_issue(issue, response, parent_info)
                         
                         # Mark as responded
                         try:
